@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: typolearny-backend
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: MONGO_URI
+        sync: false
+  - type: web
+    name: typolearny-frontend
+    env: static
+    plan: free
+    buildCommand: ""
+    staticPublishPath: ./public

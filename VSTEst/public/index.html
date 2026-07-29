@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TypoLearny</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body { font-family: Arial, sans-serif; }
+      .emoji-burst { position: absolute; animation: floatUp 1.2s ease-out forwards; pointer-events: none; }
+      @keyframes floatUp {
+        0% { transform: translateY(0) scale(1); opacity: 1; }
+        100% { transform: translateY(-140px) scale(1.4); opacity: 0; }
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-slate-950 text-slate-100">
+    <div class="max-w-6xl mx-auto p-6">
+      <header class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 class="text-4xl font-bold">TypoLearny</h1>
+          <p class="text-slate-400">Fun learning through repetition.</p>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="rounded-xl border border-slate-800 bg-slate-900 px-4 py-2">Score: <span id="score">0</span></div>
+          <div class="rounded-xl border border-slate-800 bg-slate-900 px-4 py-2">Level: <span id="levelLabel">Level 1</span></div>
+        </div>
+      </header>
+
+      <section class="mt-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+        <div class="rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
+          <div class="mb-4 flex items-center justify-between">
+            <div>
+              <h2 class="text-xl font-semibold" id="promptTitle">Type the letters</h2>
+              <p class="text-slate-400" id="promptText">Press the correct keys to earn points.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="volumeBtn" class="rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-sm font-semibold">🔈 Off</button>
+              <button id="startBtn" class="rounded-xl bg-cyan-500 px-4 py-2 font-semibold text-slate-950">Start</button>
+            </div>
+          </div>
+
+          <div class="relative rounded-2xl border border-slate-700 bg-slate-950 p-6">
+            <div id="gameArea" class="min-h-[220px]">
+              <p class="text-lg text-slate-300" id="challengeText">Press Start to begin.</p>
+            </div>
+            <div id="emojiLayer" class="absolute inset-0 overflow-hidden"></div>
+            <div id="videoOverlay" class="absolute inset-0 hidden items-center justify-center rounded-2xl bg-slate-950/90 p-4"></div>
+          </div>
+
+          <input id="inputField" class="mt-4 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-lg outline-none focus:border-cyan-500" autocomplete="off" placeholder="Type here..." />
+        </div>
+
+        <aside class="rounded-3xl border border-slate-800 bg-slate-900 p-6">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xl font-semibold">Progress</h3>
+            <button id="loginToggle" class="text-sm text-cyan-400">Login</button>
+          </div>
+
+          <div id="authPanel" class="mt-4 space-y-3">
+            <input id="email" class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2" placeholder="Email" />
+            <input id="password" type="password" class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2" placeholder="Password" />
+            <div class="flex gap-2">
+              <button id="registerBtn" class="flex-1 rounded-xl bg-cyan-500 px-3 py-2 font-semibold text-slate-950">Register</button>
+              <button id="loginBtn" class="flex-1 rounded-xl bg-slate-700 px-3 py-2 font-semibold">Login</button>
+            </div>
+          </div>
+
+          <div class="mt-6">
+            <h4 class="font-semibold">Levels</h4>
+            <div id="levelList" class="mt-3 space-y-2 text-sm text-slate-300"></div>
+          </div>
+        </aside>
+      </section>
+    </div>
+
+    <script src="/config.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>

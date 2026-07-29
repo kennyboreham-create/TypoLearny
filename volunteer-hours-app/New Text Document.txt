@@ -1,0 +1,37 @@
+typolearny/
+├── backend/
+│   ├── config/
+│   │   └── db.js                 # MongoDB connection using Mongoose
+│   ├── controllers/
+│   │   ├── authController.js     # User register/login & JWT tokens
+│   │   └── progressController.js # Get & update user level progress
+│   ├── middleware/
+│   │   └── authMiddleware.js     # JWT verification middleware
+│   ├── models/
+│   │   └── User.js               # MongoDB Schema (username, password, level, points)
+│   ├── routes/
+│   │   ├── authRoutes.js         # API endpoints: /api/auth/register, /login
+│   │   └── progressRoutes.js     # API endpoints: /api/progress
+│   ├── .env.example              # Template for PORT, MONGO_URI, JWT_SECRET
+│   ├── package.json              # Backend dependencies (express, mongoose, bcrypt, jwt)
+│   └── server.js                 # Express server entry point
+│
+└── frontend/
+    ├── assets/
+    │   ├── videos/               # Level completion video files (e.g., level1.mp4 ... level24.mp4)
+    │   └── audio/                # Key press or success sound effects (optional)
+    ├── css/
+    │   └── styles.css            # Custom CSS animations (emoji particle floating, layout)
+    ├── js/
+    │   ├── api.js                # Fetch wrapper for Auth & Progress backend API calls
+    │   ├── auth.js               # Handles login, signup, JWT storage, guest mode logic
+    │   ├── config/
+    │   │   └── levels.js         # Data array for all 14 Basic + 10 Advanced level rules
+    │   ├── engine/
+    │   │   ├── typingEngine.js   # Key listener, score tracking, timer logic (30s tests)
+    │   │   └── particleFX.js     # Emoji burst generator on key press
+    │   ├── ui.js                 # DOM manipulators (score display, video modal, level select)
+    │   └── app.js                # Main application initialization
+    ├── index.html                # Main SPA view (Typing interface, HUD, Video overlay)
+    ├── login.html                # Login / Signup page
+    └── tailwind.config.js        # Optional Tailwind setup (or via CDN in index.html)
