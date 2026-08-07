@@ -168,9 +168,10 @@ function completeLevel() {
   state.levelProgress = Math.max(state.levelProgress, state.currentLevel.id <= 14 ? state.currentLevel.id : state.currentLevel.id - 100 + 14);
   renderLevels();
   if (state.user) {
-    fetch('/api/progress', {
+    fetch(apiUrl('/api/progress'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ levelId: state.currentLevel.id <= 14 ? state.currentLevel.id : state.currentLevel.id - 100 + 14 })
     }).catch(() => {});
   }
@@ -269,6 +270,7 @@ registerBtnEl.addEventListener('click', async () => {
   const res = await fetch(apiUrl('/api/auth/register'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify({ email: emailEl.value, password: passwordEl.value })
   });
   const data = await res.json();
@@ -284,6 +286,7 @@ loginBtnEl.addEventListener('click', async () => {
   const res = await fetch(apiUrl('/api/auth/login'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify({ email: emailEl.value, password: passwordEl.value })
   });
   const data = await res.json();
@@ -297,7 +300,7 @@ loginBtnEl.addEventListener('click', async () => {
 
 (async function loadUser() {
   try {
-    const res = await fetch(apiUrl('/api/me'));
+    const res = await fetch(apiUrl('/api/me'), { credentials: 'include' });
     if (!res.ok) return;
     const data = await res.json();
     state.user = data.user;
