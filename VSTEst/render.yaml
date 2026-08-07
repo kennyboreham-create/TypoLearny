@@ -17,4 +17,4 @@ services:
     env: static
     plan: free
     buildCommand: ""
-    staticPublishPath: ./public
+    staticPublishPath: ./VSTEst/public
