@@ -16,13 +16,26 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/typolearny';
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
+const allowedOrigins = [
+  'https://typolearny-1.onrender.com',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000'
+].filter(Boolean);
 
-app.use(cors({
-  origin: true,
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Credentials', 'true');
+  }
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  next();
+});
+app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -66,7 +79,7 @@ app.post('/api/auth/register', async (req, res) => {
 
     const user = await User.create({ email, password });
     const token = jwt.sign({ userId: user._id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
-    res.cookie('token', token, { httpOnly: true, sameSite: 'lax' });
+    res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: true });
     return res.json({ token, user: { id: user._id, email: user.email, progress: user.progress } });
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -86,7 +99,7 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     const token = jwt.sign({ userId: user._id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
-    res.cookie('token', token, { httpOnly: true, sameSite: 'lax' });
+    res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: true });
     return res.json({ token, user: { id: user._id, email: user.email, progress: user.progress } });
   } catch (error) {
     return res.status(500).json({ error: error.message });
