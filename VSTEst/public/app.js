@@ -1,5 +1,8 @@
 const API_BASE = window.__API_BASE__ || '';
-const apiUrl = (path) => `${API_BASE}${path}`;
+const apiUrl = (path) => {
+  if (!API_BASE) return path;
+  return `${API_BASE}${path}`;
+};
 
 const state = {
   score: 0,
