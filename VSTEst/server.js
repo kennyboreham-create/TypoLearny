@@ -17,6 +17,7 @@ const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/typolearny';
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 const allowedOrigins = [
+  'https://typolearny.onrender.com',
   'https://typolearny-1.onrender.com',
   'http://localhost:3000',
   'http://127.0.0.1:3000'
