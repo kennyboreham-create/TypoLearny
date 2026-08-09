@@ -21,8 +21,29 @@ const state = {
   timerRemaining: 30000,
   timerInterval: null,
   audioEnabled: false,
-  token: ''
+  token: getStoredToken()
 };
+
+function getStoredToken() {
+  try {
+    return sessionStorage.getItem('typolearny_token') || '';
+  } catch {
+    return '';
+  }
+}
+
+function saveToken(token) {
+  state.token = token || '';
+  try {
+    if (state.token) {
+      sessionStorage.setItem('typolearny_token', state.token);
+    } else {
+      sessionStorage.removeItem('typolearny_token');
+    }
+  } catch {
+    // ignore storage errors
+  }
+}
 
 const basicLevels = [
   { id: 1, label: 'Level 1', letters: 'fj' },
@@ -174,7 +195,10 @@ function completeLevel() {
   if (state.user) {
     fetch(apiUrl('/api/progress'), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(state.token ? { Authorization: `Bearer ${state.token}` } : {})
+      },
       credentials: 'include',
       body: JSON.stringify({ levelId: state.currentLevel.id <= 14 ? state.currentLevel.id : state.currentLevel.id - 100 + 14 })
     }).catch(() => {});
@@ -280,7 +304,7 @@ registerBtnEl.addEventListener('click', async () => {
   const data = await res.json();
   if (data.user) {
     state.user = data.user;
-    state.token = data.token || '';
+    saveToken(data.token || '');
     alert('Registered and logged in.');
   } else {
     alert(data.error || 'Registration failed');
@@ -297,7 +321,7 @@ loginBtnEl.addEventListener('click', async () => {
   const data = await res.json();
   if (data.user) {
     state.user = data.user;
-    state.token = data.token || '';
+    saveToken(data.token || '');
     alert('Logged in.');
   } else {
     alert(data.error || 'Login failed');
@@ -305,14 +329,21 @@ loginBtnEl.addEventListener('click', async () => {
 });
 
 (async function loadUser() {
+  if (!state.token) {
+    renderLevels();
+    updateScore();
+    return;
+  }
+
   try {
     const res = await fetch(apiUrl('/api/me'), {
       credentials: 'include',
-      headers: state.token ? { Authorization: `Bearer ${state.token}` } : {}
+      headers: { Authorization: `Bearer ${state.token}` }
     });
     if (!res.ok) {
       if (res.status === 401) {
         state.user = null;
+        saveToken('');
       }
       renderLevels();
       updateScore();

@@ -16,6 +16,12 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/typolearny';
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
+const isProduction = process.env.NODE_ENV === 'production';
+const cookieOptions = {
+  httpOnly: true,
+  sameSite: isProduction ? 'none' : 'lax',
+  secure: isProduction
+};
 const allowedOrigins = [
   'https://typolearny.onrender.com',
   'https://typolearny-1.onrender.com',
@@ -64,7 +70,8 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model('User', userSchema);
 
 function authMiddleware(req, res, next) {
-  const token = req.cookies?.token || req.headers.authorization?.replace('Bearer ', '');
+  const authHeader = req.headers.authorization || '';
+  const token = req.cookies?.token || (authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : authHeader.trim());
   if (!token) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
@@ -123,7 +130,7 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 app.post('/api/auth/logout', (_req, res) => {
-  res.clearCookie('token', { sameSite: 'none', secure: true });
+  res.clearCookie('token', cookieOptions);
   return res.json({ ok: true });
 });
 
