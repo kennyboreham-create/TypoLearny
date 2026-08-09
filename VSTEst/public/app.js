@@ -114,11 +114,18 @@ function getNextLevelToStart() {
 }
 
 function renderLevels() {
-  const visibleLevels = state.levelProgress >= basicLevels.length
-    ? [...basicLevels, ...advancedLevels]
-    : basicLevels;
+  const beginnerComplete = state.levelProgress >= basicLevels.length;
 
-  const items = visibleLevels.map((level) => {
+  if (beginnerComplete) {
+    levelListEl.innerHTML = `
+      <div class="rounded-xl border border-cyan-500/30 bg-slate-950 px-3 py-3 text-sm text-slate-300">
+        Advanced levels are unlocked. Press <span class="font-semibold text-cyan-400">Start</span> to begin the first advanced challenge.
+      </div>
+    `;
+    return;
+  }
+
+  const items = basicLevels.map((level) => {
     const isUnlocked = level.id <= state.levelProgress + 1 || level.id === 1;
     const isCompleted = level.id <= state.levelProgress;
     const stateClass = !isUnlocked
