@@ -346,8 +346,11 @@ registerBtnEl.addEventListener('click', async () => {
   const data = await res.json();
   if (data.user) {
     state.user = data.user;
+    state.levelProgress = data.user.progress || 0;
     saveToken(data.token || '');
     renderAuthUI();
+    renderLevels();
+    updateScore();
     alert('Registered and logged in.');
   } else {
     alert(data.error || 'Registration failed');
@@ -364,8 +367,11 @@ loginBtnEl.addEventListener('click', async () => {
   const data = await res.json();
   if (data.user) {
     state.user = data.user;
+    state.levelProgress = data.user.progress || 0;
     saveToken(data.token || '');
     renderAuthUI();
+    renderLevels();
+    updateScore();
     alert('Logged in.');
   } else {
     alert(data.error || 'Login failed');
