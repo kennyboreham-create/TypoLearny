@@ -6,6 +6,7 @@ const apiUrl = (path) => {
 
 const state = {
   score: 0,
+  totalScore: 0,
   levelIndex: 0,
   currentLevel: null,
   currentLevelTarget: 100,
@@ -76,6 +77,7 @@ const advancedLevels = [
 ];
 
 const scoreEl = document.getElementById('score');
+const totalScoreEl = document.getElementById('totalScore');
 const levelLabelEl = document.getElementById('levelLabel');
 const promptTitleEl = document.getElementById('promptTitle');
 const promptTextEl = document.getElementById('promptText');
@@ -176,7 +178,8 @@ function buildAdvancedSequence(level) {
 
 function setLevel(level) {
   state.currentLevel = level;
-  state.currentLevelTarget = (level.id <= 14 ? level.id : level.id - 100 + 14) * 100;
+  state.score = 0;
+  state.currentLevelTarget = 100;
   state.currentPrompt = level.description || `Type: ${level.letters}`;
   state.currentType = level.id >= 101 ? 'advanced' : 'basic';
   state.currentTarget = state.currentType === 'basic' ? buildBasicSequence(level) : buildAdvancedSequence(level);
@@ -208,6 +211,9 @@ function updateChallengeText() {
 
 function updateScore() {
   scoreEl.textContent = state.score;
+  if (totalScoreEl) {
+    totalScoreEl.textContent = state.totalScore;
+  }
 }
 
 function burstEmojis() {
@@ -234,6 +240,7 @@ function speakLetter(letter) {
 
 function handleCorrectInput(letter) {
   state.score += 1;
+  state.totalScore += 1;
   updateScore();
   burstEmojis();
   if (state.currentType === 'basic') {
@@ -241,14 +248,14 @@ function handleCorrectInput(letter) {
   } else {
     speakLetter(letter);
   }
-  if (state.score >= state.currentLevelTarget) {
+  if (state.score >= 100) {
     completeLevel();
   }
 }
 
 function completeLevel() {
-  const nextProgress = state.currentLevel.id <= 14 ? state.currentLevel.id : state.currentLevel.id - 100 + 14;
-  state.levelProgress = Math.max(state.levelProgress, nextProgress);
+  const completedLevelId = state.currentLevel.id <= 14 ? state.currentLevel.id : state.currentLevel.id - 100 + 14;
+  state.levelProgress = Math.max(state.levelProgress, completedLevelId);
   renderLevels();
   if (state.user) {
     fetch(apiUrl('/api/progress'), {
@@ -258,7 +265,7 @@ function completeLevel() {
         ...(state.token ? { Authorization: `Bearer ${state.token}` } : {})
       },
       credentials: 'include',
-      body: JSON.stringify({ levelId: state.currentLevel.id <= 14 ? state.currentLevel.id : state.currentLevel.id - 100 + 14 })
+      body: JSON.stringify({ levelId: completedLevelId, totalScore: state.totalScore })
     }).catch(() => {});
   }
 
@@ -384,6 +391,7 @@ logoutBtnEl.addEventListener('click', async () => {
   state.user = null;
   saveToken('');
   state.levelProgress = 0;
+  state.totalScore = 0;
   renderAuthUI();
   renderLevels();
   updateScore();
@@ -400,6 +408,7 @@ registerBtnEl.addEventListener('click', async () => {
   if (data.user) {
     state.user = data.user;
     state.levelProgress = data.user.progress || 0;
+    state.totalScore = data.user.totalScore || 0;
     saveToken(data.token || '');
     renderAuthUI();
     renderLevels();
@@ -421,6 +430,7 @@ loginBtnEl.addEventListener('click', async () => {
   if (data.user) {
     state.user = data.user;
     state.levelProgress = data.user.progress || 0;
+    state.totalScore = data.user.totalScore || 0;
     saveToken(data.token || '');
     renderAuthUI();
     renderLevels();
@@ -455,6 +465,7 @@ loginBtnEl.addEventListener('click', async () => {
     const data = await res.json();
     state.user = data.user;
     state.levelProgress = data.user.progress || 0;
+    state.totalScore = data.user.totalScore || 0;
   } catch {
     // guest mode
   }

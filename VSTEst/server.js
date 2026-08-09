@@ -66,7 +66,8 @@ const userSchema = new mongoose.Schema({
   username: { type: String, trim: true, default: '' },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  progress: { type: Number, default: 0 }
+  progress: { type: Number, default: 0 },
+  totalScore: { type: Number, default: 0 }
 });
 
 const User = mongoose.model('User', userSchema);
@@ -119,7 +120,7 @@ app.post('/api/auth/register', async (req, res) => {
     const user = await User.create({ username: safeUsername, email, password: hashedPassword });
     const token = jwt.sign({ userId: user._id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
     res.cookie('token', token, cookieOptions);
-    return res.json({ token, user: { id: user._id, username: user.username || safeUsername, email: user.email, progress: user.progress } });
+    return res.json({ token, user: { id: user._id, username: user.username || safeUsername, email: user.email, progress: user.progress, totalScore: user.totalScore || 0 } });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -140,7 +141,7 @@ app.post('/api/auth/login', async (req, res) => {
     const displayUsername = user.username || email.split('@')[0] || 'player';
     const token = jwt.sign({ userId: user._id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
     res.cookie('token', token, cookieOptions);
-    return res.json({ token, user: { id: user._id, username: displayUsername, email: user.email, progress: user.progress } });
+    return res.json({ token, user: { id: user._id, username: displayUsername, email: user.email, progress: user.progress, totalScore: user.totalScore || 0 } });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -156,7 +157,7 @@ app.get('/api/me', authMiddleware, async (req, res) => {
     const user = await User.findById(req.user.userId);
     if (!user) return res.status(404).json({ error: 'User not found' });
     const displayUsername = user.username || user.email.split('@')[0] || 'player';
-    return res.json({ user: { id: user._id, username: displayUsername, email: user.email, progress: user.progress } });
+    return res.json({ user: { id: user._id, username: displayUsername, email: user.email, progress: user.progress, totalScore: user.totalScore || 0 } });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -164,13 +165,14 @@ app.get('/api/me', authMiddleware, async (req, res) => {
 
 app.post('/api/progress', authMiddleware, async (req, res) => {
   try {
-    const { levelId } = req.body;
+    const { levelId, totalScore } = req.body;
     const user = await User.findById(req.user.userId);
     if (!user) return res.status(404).json({ error: 'User not found' });
     const nextProgress = Math.max(user.progress, Number(levelId));
     user.progress = nextProgress;
+    user.totalScore = Number(totalScore || user.totalScore || 0);
     await user.save();
-    return res.json({ progress: user.progress });
+    return res.json({ progress: user.progress, totalScore: user.totalScore });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
