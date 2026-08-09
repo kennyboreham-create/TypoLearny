@@ -265,12 +265,16 @@ function completeLevel() {
   videoOverlayEl.classList.remove('hidden');
   videoOverlayEl.classList.add('flex');
   const isBeginnerComplete = state.currentLevel.id === basicLevels[basicLevels.length - 1].id;
+  const videoPath = `/assets/level-${state.currentLevel.id}.mp4`;
   const message = isBeginnerComplete
     ? '<p class="text-lg font-semibold">Congratulations! You passed the beginner levels.</p><p class="mt-2 text-sm text-slate-400">The advanced levels are now unlocked.</p>'
-    : '<p class="text-lg font-semibold">Level complete! Great work.</p><p class="mt-2 text-sm text-slate-400">If you add a video named <span class="font-mono text-cyan-400">/assets/level-' + state.currentLevel.id + '.mp4</span>, it will play here.</p>';
+    : '<p class="text-lg font-semibold">Level complete! Great work.</p>';
   videoOverlayEl.innerHTML = `
     <div class="w-full max-w-xl rounded-3xl border border-cyan-500/30 bg-slate-900 p-4 text-center">
       ${message}
+      <div class="mt-4 overflow-hidden rounded-2xl border border-slate-700 bg-slate-950">
+        <video src="${videoPath}" class="w-full max-h-80 object-contain" controls autoplay playsinline></video>
+      </div>
       <button id="closeVideoBtn" class="mt-4 rounded-xl bg-cyan-500 px-4 py-2 font-semibold text-slate-950">Continue</button>
     </div>
   `;
