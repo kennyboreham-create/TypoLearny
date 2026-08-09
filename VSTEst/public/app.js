@@ -96,10 +96,28 @@ const logoutBtnEl = document.getElementById('logoutBtn');
 const authPanelEl = document.getElementById('authPanel');
 const authStatusEl = document.getElementById('authStatus');
 
+function getAllLevels() {
+  return [...basicLevels, ...advancedLevels];
+}
+
+function getLevelById(levelId) {
+  return getAllLevels().find((level) => level.id === levelId) || basicLevels[0];
+}
+
+function getNextLevelToStart() {
+  const nextLevel = getAllLevels().find((level) => level.id > state.levelProgress);
+  return nextLevel || basicLevels[0];
+}
+
 function renderLevels() {
-  const items = [...basicLevels, ...advancedLevels].map((level) => {
+  const items = getAllLevels().map((level) => {
     const isUnlocked = level.id <= state.levelProgress + 1 || level.id === 1;
-    return `<div class="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 ${isUnlocked ? 'opacity-100' : 'opacity-50'}">${level.label}: ${level.description || level.letters}</div>`;
+    const isCompleted = level.id <= state.levelProgress;
+    const stateClass = !isUnlocked
+      ? 'opacity-50 cursor-not-allowed'
+      : 'opacity-100 cursor-pointer hover:border-cyan-500';
+    const borderClass = isCompleted ? 'border-cyan-500/40' : 'border-slate-800';
+    return `<button type="button" data-level-id="${level.id}" class="w-full rounded-xl border ${borderClass} bg-slate-950 px-3 py-2 text-left ${stateClass}" ${!isUnlocked ? 'disabled' : ''}>${level.label}: ${level.description || level.letters}</button>`;
   });
   levelListEl.innerHTML = items.join('');
 }
@@ -244,12 +262,13 @@ function completeLevel() {
   });
 }
 
-function startGame() {
+function startGame(level = null) {
   state.isPlaying = true;
   state.score = 0;
   state.levelIndex = 0;
   updateScore();
-  setLevel(basicLevels[0]);
+  const targetLevel = level || getNextLevelToStart();
+  setLevel(targetLevel);
   inputFieldEl.value = '';
   inputFieldEl.focus();
 }
@@ -307,7 +326,18 @@ inputFieldEl.addEventListener('input', (event) => {
   }
 });
 
-startBtnEl.addEventListener('click', startGame);
+startBtnEl.addEventListener('click', () => startGame());
+
+levelListEl.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-level-id]');
+  if (!button) return;
+  const levelId = Number(button.getAttribute('data-level-id'));
+  if (!Number.isFinite(levelId)) return;
+  const level = getLevelById(levelId);
+  if (level.id <= state.levelProgress + 1 || level.id === 1) {
+    startGame(level);
+  }
+});
 
 volumeBtnEl.addEventListener('click', () => {
   state.audioEnabled = !state.audioEnabled;
