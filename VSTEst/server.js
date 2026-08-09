@@ -102,7 +102,7 @@ app.post('/api/auth/register', async (req, res) => {
 
     const user = await User.create({ email, password });
     const token = jwt.sign({ userId: user._id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
-    res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: true });
+    res.cookie('token', token, cookieOptions);
     return res.json({ token, user: { id: user._id, email: user.email, progress: user.progress } });
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -122,7 +122,7 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     const token = jwt.sign({ userId: user._id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
-    res.cookie('token', token, { httpOnly: true, sameSite: 'none', secure: true });
+    res.cookie('token', token, cookieOptions);
     return res.json({ token, user: { id: user._id, email: user.email, progress: user.progress } });
   } catch (error) {
     return res.status(500).json({ error: error.message });
