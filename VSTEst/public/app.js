@@ -20,7 +20,8 @@ const state = {
   currentWord: '',
   timerRemaining: 30000,
   timerInterval: null,
-  audioEnabled: false
+  audioEnabled: false,
+  token: ''
 };
 
 const basicLevels = [
@@ -279,6 +280,7 @@ registerBtnEl.addEventListener('click', async () => {
   const data = await res.json();
   if (data.user) {
     state.user = data.user;
+    state.token = data.token || '';
     alert('Registered and logged in.');
   } else {
     alert(data.error || 'Registration failed');
@@ -295,6 +297,7 @@ loginBtnEl.addEventListener('click', async () => {
   const data = await res.json();
   if (data.user) {
     state.user = data.user;
+    state.token = data.token || '';
     alert('Logged in.');
   } else {
     alert(data.error || 'Login failed');
@@ -303,7 +306,10 @@ loginBtnEl.addEventListener('click', async () => {
 
 (async function loadUser() {
   try {
-    const res = await fetch(apiUrl('/api/me'), { credentials: 'include' });
+    const res = await fetch(apiUrl('/api/me'), {
+      credentials: 'include',
+      headers: state.token ? { Authorization: `Bearer ${state.token}` } : {}
+    });
     if (!res.ok) {
       if (res.status === 401) {
         state.user = null;
