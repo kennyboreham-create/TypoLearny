@@ -304,7 +304,14 @@ loginBtnEl.addEventListener('click', async () => {
 (async function loadUser() {
   try {
     const res = await fetch(apiUrl('/api/me'), { credentials: 'include' });
-    if (!res.ok) return;
+    if (!res.ok) {
+      if (res.status === 401) {
+        state.user = null;
+      }
+      renderLevels();
+      updateScore();
+      return;
+    }
     const data = await res.json();
     state.user = data.user;
     state.levelProgress = data.user.progress || 0;
