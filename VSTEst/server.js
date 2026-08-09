@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import path from 'path';
+import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 
 dotenv.config();
@@ -86,6 +87,18 @@ function authMiddleware(req, res, next) {
   }
 }
 
+function hashPassword(password) {
+  return crypto.createHash('sha256').update(password).digest('hex');
+}
+
+function isPasswordValid(storedPassword, plainPassword) {
+  if (!storedPassword || !plainPassword) return false;
+  if (storedPassword.startsWith('$2b$')) {
+    return false;
+  }
+  return storedPassword === hashPassword(plainPassword);
+}
+
 app.get('/', (_req, res) => res.json({ ok: true, service: 'typolearny-backend' }));
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
@@ -102,7 +115,8 @@ app.post('/api/auth/register', async (req, res) => {
     }
 
     const safeUsername = String(username || email.split('@')[0] || 'player').trim();
-    const user = await User.create({ username: safeUsername, email, password });
+    const hashedPassword = hashPassword(password);
+    const user = await User.create({ username: safeUsername, email, password: hashedPassword });
     const token = jwt.sign({ userId: user._id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
     res.cookie('token', token, cookieOptions);
     return res.json({ token, user: { id: user._id, username: user.username || safeUsername, email: user.email, progress: user.progress } });
@@ -118,8 +132,8 @@ app.post('/api/auth/login', async (req, res) => {
   }
 
   try {
-    const user = await User.findOne({ email, password });
-    if (!user) {
+    const user = await User.findOne({ email });
+    if (!user || !isPasswordValid(user.password, password)) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 

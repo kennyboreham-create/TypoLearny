@@ -63,7 +63,7 @@ const basicLevels = [
 ];
 
 const advancedLevels = [
-  { id: 101, label: 'Advanced 1', description: '3 to 4 letter easy words (4 words)', words: ['cat', 'dog', 'sun', 'map'] },
+  { id: 101, label: 'Advanced 1', description: '3 to 4 letter easy words (4 words)', words: ['cat', 'dog', 'sun', 'map',"bear","duck","frog","fish","lion","bird","tree","star"] },
   { id: 102, label: 'Advanced 2', description: '3 to 4 letter easy words (5 words)', words: ['red', 'box', 'pen', 'car', 'hat'] },
   { id: 103, label: 'Advanced 3', description: '3 to 5 letter easy words (5 words)', words: ['plant', 'stone', 'water', 'grass', 'river'] },
   { id: 104, label: 'Advanced 4', description: 'up to 5 letter easy words (6 words)', words: ['apple', 'grape', 'smile', 'table', 'candy', 'light'] },
