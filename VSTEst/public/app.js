@@ -88,10 +88,13 @@ const emojiLayerEl = document.getElementById('emojiLayer');
 const videoOverlayEl = document.getElementById('videoOverlay');
 const emailEl = document.getElementById('email');
 const passwordEl = document.getElementById('password');
+const usernameEl = document.getElementById('username');
 const registerBtnEl = document.getElementById('registerBtn');
 const loginBtnEl = document.getElementById('loginBtn');
 const loginToggleEl = document.getElementById('loginToggle');
+const logoutBtnEl = document.getElementById('logoutBtn');
 const authPanelEl = document.getElementById('authPanel');
+const authStatusEl = document.getElementById('authStatus');
 
 function renderLevels() {
   const items = [...basicLevels, ...advancedLevels].map((level) => {
@@ -99,6 +102,27 @@ function renderLevels() {
     return `<div class="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 ${isUnlocked ? 'opacity-100' : 'opacity-50'}">${level.label}: ${level.description || level.letters}</div>`;
   });
   levelListEl.innerHTML = items.join('');
+}
+
+function renderAuthUI() {
+  const isLoggedIn = !!state.user;
+  authPanelEl.classList.toggle('hidden', isLoggedIn);
+  logoutBtnEl.classList.toggle('hidden', !isLoggedIn);
+  loginToggleEl.textContent = isLoggedIn ? 'Account' : 'Login';
+
+  if (!isLoggedIn) {
+    authStatusEl.classList.add('hidden');
+    authStatusEl.innerHTML = '';
+    return;
+  }
+
+  authStatusEl.classList.remove('hidden');
+  authStatusEl.innerHTML = '';
+  const displayName = state.user.username || state.user.email?.split('@')[0] || 'Player';
+  const label = document.createElement('div');
+  label.className = 'font-semibold text-cyan-400';
+  label.textContent = `Signed in as ${displayName}`;
+  authStatusEl.appendChild(label);
 }
 
 function buildBasicSequence(level) {
@@ -291,7 +315,25 @@ volumeBtnEl.addEventListener('click', () => {
 });
 
 loginToggleEl.addEventListener('click', () => {
+  if (state.user) return;
   authPanelEl.classList.toggle('hidden');
+});
+
+logoutBtnEl.addEventListener('click', async () => {
+  try {
+    await fetch(apiUrl('/api/auth/logout'), {
+      method: 'POST',
+      credentials: 'include'
+    });
+  } catch {
+    // ignore logout errors
+  }
+  state.user = null;
+  saveToken('');
+  state.levelProgress = 0;
+  renderAuthUI();
+  renderLevels();
+  updateScore();
 });
 
 registerBtnEl.addEventListener('click', async () => {
@@ -299,12 +341,13 @@ registerBtnEl.addEventListener('click', async () => {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
-    body: JSON.stringify({ email: emailEl.value, password: passwordEl.value })
+    body: JSON.stringify({ username: usernameEl.value.trim(), email: emailEl.value, password: passwordEl.value })
   });
   const data = await res.json();
   if (data.user) {
     state.user = data.user;
     saveToken(data.token || '');
+    renderAuthUI();
     alert('Registered and logged in.');
   } else {
     alert(data.error || 'Registration failed');
@@ -322,6 +365,7 @@ loginBtnEl.addEventListener('click', async () => {
   if (data.user) {
     state.user = data.user;
     saveToken(data.token || '');
+    renderAuthUI();
     alert('Logged in.');
   } else {
     alert(data.error || 'Login failed');
@@ -355,9 +399,11 @@ loginBtnEl.addEventListener('click', async () => {
   } catch {
     // guest mode
   }
+  renderAuthUI();
   renderLevels();
   updateScore();
 })();
 
+renderAuthUI();
 renderLevels();
 updateScore();

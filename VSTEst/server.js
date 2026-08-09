@@ -62,6 +62,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 const userSchema = new mongoose.Schema({
+  username: { type: String, trim: true, default: '' },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   progress: { type: Number, default: 0 }
@@ -89,7 +90,7 @@ app.get('/', (_req, res) => res.json({ ok: true, service: 'typolearny-backend' }
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
 app.post('/api/auth/register', async (req, res) => {
-  const { email, password } = req.body;
+  const { username, email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required' });
   }
@@ -100,10 +101,11 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(409).json({ error: 'User already exists' });
     }
 
-    const user = await User.create({ email, password });
+    const safeUsername = String(username || email.split('@')[0] || 'player').trim();
+    const user = await User.create({ username: safeUsername, email, password });
     const token = jwt.sign({ userId: user._id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
     res.cookie('token', token, cookieOptions);
-    return res.json({ token, user: { id: user._id, email: user.email, progress: user.progress } });
+    return res.json({ token, user: { id: user._id, username: user.username || safeUsername, email: user.email, progress: user.progress } });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -121,9 +123,10 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    const displayUsername = user.username || email.split('@')[0] || 'player';
     const token = jwt.sign({ userId: user._id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
     res.cookie('token', token, cookieOptions);
-    return res.json({ token, user: { id: user._id, email: user.email, progress: user.progress } });
+    return res.json({ token, user: { id: user._id, username: displayUsername, email: user.email, progress: user.progress } });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -138,7 +141,8 @@ app.get('/api/me', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user.userId);
     if (!user) return res.status(404).json({ error: 'User not found' });
-    return res.json({ user: { id: user._id, email: user.email, progress: user.progress } });
+    const displayUsername = user.username || user.email.split('@')[0] || 'player';
+    return res.json({ user: { id: user._id, username: displayUsername, email: user.email, progress: user.progress } });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
