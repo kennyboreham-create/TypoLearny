@@ -105,12 +105,20 @@ function getLevelById(levelId) {
 }
 
 function getNextLevelToStart() {
-  const nextLevel = getAllLevels().find((level) => level.id > state.levelProgress);
+  if (state.levelProgress >= basicLevels.length) {
+    const nextLevel = advancedLevels.find((level) => level.id > state.levelProgress);
+    return nextLevel || advancedLevels[0];
+  }
+  const nextLevel = basicLevels.find((level) => level.id > state.levelProgress);
   return nextLevel || basicLevels[0];
 }
 
 function renderLevels() {
-  const items = getAllLevels().map((level) => {
+  const visibleLevels = state.levelProgress >= basicLevels.length
+    ? [...basicLevels, ...advancedLevels]
+    : basicLevels;
+
+  const items = visibleLevels.map((level) => {
     const isUnlocked = level.id <= state.levelProgress + 1 || level.id === 1;
     const isCompleted = level.id <= state.levelProgress;
     const stateClass = !isUnlocked
@@ -232,7 +240,8 @@ function handleCorrectInput(letter) {
 }
 
 function completeLevel() {
-  state.levelProgress = Math.max(state.levelProgress, state.currentLevel.id <= 14 ? state.currentLevel.id : state.currentLevel.id - 100 + 14);
+  const nextProgress = state.currentLevel.id <= 14 ? state.currentLevel.id : state.currentLevel.id - 100 + 14;
+  state.levelProgress = Math.max(state.levelProgress, nextProgress);
   renderLevels();
   if (state.user) {
     fetch(apiUrl('/api/progress'), {
@@ -248,10 +257,13 @@ function completeLevel() {
 
   videoOverlayEl.classList.remove('hidden');
   videoOverlayEl.classList.add('flex');
+  const isBeginnerComplete = state.currentLevel.id === basicLevels[basicLevels.length - 1].id;
+  const message = isBeginnerComplete
+    ? '<p class="text-lg font-semibold">Congratulations! You passed the beginner levels.</p><p class="mt-2 text-sm text-slate-400">The advanced levels are now unlocked.</p>'
+    : '<p class="text-lg font-semibold">Level complete! Great work.</p><p class="mt-2 text-sm text-slate-400">If you add a video named <span class="font-mono text-cyan-400">/assets/level-' + state.currentLevel.id + '.mp4</span>, it will play here.</p>';
   videoOverlayEl.innerHTML = `
     <div class="w-full max-w-xl rounded-3xl border border-cyan-500/30 bg-slate-900 p-4 text-center">
-      <p class="text-lg font-semibold">Level complete! Great work.</p>
-      <p class="mt-2 text-sm text-slate-400">If you add a video named <span class="font-mono text-cyan-400">/assets/level-${state.currentLevel.id}.mp4</span>, it will play here.</p>
+      ${message}
       <button id="closeVideoBtn" class="mt-4 rounded-xl bg-cyan-500 px-4 py-2 font-semibold text-slate-950">Continue</button>
     </div>
   `;
