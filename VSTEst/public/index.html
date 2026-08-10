@@ -53,14 +53,26 @@
 
           <input id="inputField" class="mt-4 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-lg outline-none focus:border-cyan-500" autocomplete="off" placeholder="Type here..." />
         
-          <div class="relative rounded-2xl border border-slate-700 bg-slate-950 p-6">
-            <div id="gameArea" class="min-h-[220px]">
+          <br><br><br>
+         <div class="relative rounded-2xl border border-slate-700 bg-slate-950 p-6">
+          <div id="gameArea" class="relative min-h-[220px] overflow-hidden rounded-xl">
+            <video 
+              autoplay 
+              loop 
+              muted 
+              playsinline 
+              class="absolute inset-0 h-full w-full object-cover"
+            >
+              <source src="assets/earth.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+
+            <div class="relative z-10 p-4">
               <p class="text-lg text-slate-300" id="challengeText">New</p>
             </div>
-            <div id="emojiLayer" class="absolute inset-0 overflow-hidden"></div>
-            <div id="videoOverlay" class="absolute inset-0 hidden items-center justify-center rounded-2xl bg-slate-950/90 p-4"></div>
           </div>
-          
+        </div>
+
         </div>
 
         
