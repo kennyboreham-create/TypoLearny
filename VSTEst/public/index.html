@@ -54,10 +54,10 @@
           <input id="inputField" class="mt-4 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-lg outline-none focus:border-cyan-500" autocomplete="off" placeholder="Type here..." />
         
           <br><br><br>
-         <div class="relative rounded-2xl border border-slate-700 bg-slate-950 p-6">
+        <div class="relative rounded-2xl border border-slate-700 bg-slate-950 p-6">
           <div id="gameArea" class="relative min-h-[220px] overflow-hidden rounded-xl">
             <video 
-              autoplay 
+              id="scrollVideo"
               loop 
               muted 
               playsinline 
@@ -68,10 +68,38 @@
             </video>
 
             <div class="relative z-10 p-4">
-              <p class="text-lg text-slate-300" id="challengeText">New</p>
+              <p class="text-lg text-slate-300" id="challengeText"></p>
             </div>
           </div>
         </div>
+
+        <script>
+          const video = document.getElementById('scrollVideo');
+
+          const observerOptions = {
+            root: null, // Watch relative to the viewport
+            threshold: 0.5 // Triggers when 50% of the video is visible
+          };
+
+          const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                // Video is scrolled into view -> Play
+                video.play().catch((err) => {
+                  // Handle potential browser autoplay restriction edge cases
+                  console.log('Autoplay prevented:', err);
+                });
+              } else {
+                // Video is scrolled out of view -> Pause & reset
+                video.pause();
+                video.currentTime = 0; // Rewind to start (optional)
+              }
+            });
+          }, observerOptions);
+
+          // Start watching the video element
+          observer.observe(video);
+        </script>
 
         </div>
 
